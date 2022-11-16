@@ -7,7 +7,7 @@ Run `g++ tss-demo/tss.cpp` and run `./a.out <cache_size> <cache_line_size> <row_
 # Issues
 
 - uncertain if line 34 makes sense
-- uncertain how to init `row_size` on line
+- uncertain how to init `row_size` on line 48
     - we thought `cache_size % row_length` was fine, but this causes us never to enter the while loop if the cache is smaller than the array
 - current impl does not correctly handle working set size greater than cache
 
