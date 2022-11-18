@@ -21,3 +21,17 @@ Run `g++ tss-demo/tss.cpp` and run `./a.out <cache_size> <cache_line_size> <row_
     - change algorithm to use tss
     - decide which edge cases we don't want to handle  
     - do da coding
+- Fix case where you return cols_per_set + 1 (bc probably correct as is) (Minkyoung)
+- Fix initialization of `row_size` (whoever finishes first :))
+- Fix WS issue (Elanor)
+- Write tests and walk through algorithm to determine correct solutions
+
+# Test Cases
+- 1024, ___, 200, 200
+- 8K, 32, 300, 300
+- paper has 8K (512 element) and 64K (4096 element) cache size
+- paper has cache line size 32 (2 element), 64 (4 element), 128 (8 element) (bytes)
+- array size generally 300 x 300, it's 303 x 21 for liv23
+- array sizes 256 x 256, 300 x 300, 301 x 301
+- cache smaller than array
+- WS never fits in cache
