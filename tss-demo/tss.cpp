@@ -61,33 +61,39 @@ class TSS {
         int quotient = cache_size / row_length;
         int gcd = euclidean(cache_size, row_length);
 
-        while (row_size > cache_line_size && old_row % row_size != 0 && column_size < column_length) {
-            column_size = compute_col_size(row_size);
-            // TODO: column size -> row size:
-            int temp = (row_size % cache_line_size == 0 || row_size == row_length) ? row_size : (row_size / cache_line_size) * cache_line_size;
-            if (   get_working_set_size(temp, column_size) > get_working_set_size(best_row, best_column)
-                && get_working_set_size(temp, column_size) < cache_size
-                && get_cross_interference_rate(temp, column_size) < get_cross_interference_rate(best_row, best_column)) {
-                
-                best_row = temp;
-                best_column = column_size;
-            }
+        if (cache_size <= row_size) {
+            best_row = cache_size;
+            best_column = 1;
+        }
+        else {
+            while (row_size >= cache_line_size && old_row % row_size != 0 && column_size < column_length) {
+                column_size = compute_col_size(row_size);
 
-            // euclidean algo
-            row_size = quotient % row_size;
-            if (row_size == gcd) break;
-            temp = row_size;
-            row_size = old_row % row_size;
-            old_row = temp;
-        }
-        
-        // TODO: adjust best col to meet working set size constraint --> ?
-        if (get_working_set_size(best_row, best_column) == 0){
-            while(get_working_set_size(best_row, best_column) == 0){
-                best_row -= cache_line_size;
+                int temp = (row_size % cache_line_size == 0 || row_size == row_length) ? row_size : (row_size / cache_line_size) * cache_line_size;
+                if (   get_working_set_size(temp, column_size) > get_working_set_size(best_row, best_column)
+                    && get_working_set_size(temp, column_size) < cache_size
+                    && get_cross_interference_rate(temp, column_size) < get_cross_interference_rate(best_row, best_column)) {
+
+                    best_row = temp;
+                    best_column = column_size;
+                }
+
+                row_size = quotient % row_size;
+                if (row_size == gcd) break;
+                temp = row_size;
+                row_size = old_row % row_size;
+                old_row = temp;
             }
+            
+            /***
+            TODO: adjust best col to meet working set size constraint --> ?
+            if (get_working_set_size(best_row, best_column) == 0){
+                while(get_working_set_size(best_row, best_column) == 0){
+                    best_row -= cache_line_size;
+                }
+            }
+            ***/
         }
-    
         std::cout << "Best row size: " << best_row << std::endl;
         std::cout << "Best column size: " << best_column << std::endl;
     }

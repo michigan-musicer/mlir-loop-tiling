@@ -21,12 +21,14 @@ Run `g++ tss-demo/tss.cpp` and run `./a.out <cache_size> <cache_line_size> <row_
     - change algorithm to use tss
     - decide which edge cases we don't want to handle  
     - do da coding
-- Fix case where you return cols_per_set + 1 (bc probably correct as is) (Minkyoung)
-- [DONE] Fix initialization of `row_size` (Minkyoung)
+- [DONE] Fix case where you return cols_per_set + 1 (Minkyoung: no need to modify since it is correct)
+- [DONE] Fix initialization of `row_size` (Minkyoung: check required)
 - Fix WS issue (Elanor)
 - Write tests and walk through algorithm to determine correct solutions
 
 # Test Cases
+- 1024, 200, 200, 200 (PASS)
+- 18, 8, 10, 10 
 - 1024, ___, 200, 200
 - 8K, 32, 300, 300
 - paper has 8K (512 element) and 64K (4096 element) cache size
