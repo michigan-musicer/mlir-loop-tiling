@@ -22,7 +22,7 @@ Run `g++ tss-demo/tss.cpp` and run `./a.out <cache_size> <cache_line_size> <row_
     - decide which edge cases we don't want to handle  
     - do da coding
 - Fix case where you return cols_per_set + 1 (bc probably correct as is) (Minkyoung)
-- Fix initialization of `row_size` (whoever finishes first :))
+- [DONE] Fix initialization of `row_size` (Minkyoung)
 - Fix WS issue (Elanor)
 - Write tests and walk through algorithm to determine correct solutions
 

@@ -21,9 +21,7 @@ class TSS {
     static int euclidean(int a, int b) {
         do {
             int r = a % b;
-            if (r == 0) {
-                return a;
-            }
+            if (r == 0) return b;
             a = b;
             b = r;
         } while (b > 0);
@@ -31,7 +29,7 @@ class TSS {
         return -1;
     }
 
-    int compute_rows(int row_size) {
+    int compute_col_size(int row_size) {
         int cols_per_set = cache_size / row_length;
         int remainder1 = cache_size % row_length;
         int set_difference = row_length - remainder1;
@@ -59,10 +57,13 @@ class TSS {
     void run_tss() {
         int best_row = row_length, old_row = row_length;
         int best_column = cache_size / row_length, column_size = cache_size / row_length;
-        int row_size = cache_size % row_length;
+        int row_size = cache_size % row_length; // remainder
+        int quotient = cache_size / row_length;
+        int gcd = euclidean(cache_size, row_length);
 
         while (row_size > cache_line_size && old_row % row_size != 0 && column_size < column_length) {
-            column_size = compute_rows(row_size);
+            column_size = compute_col_size(row_size);
+            // TODO: column size -> row size:
             int temp = (row_size % cache_line_size == 0 || row_size == row_length) ? row_size : (row_size / cache_line_size) * cache_line_size;
             if (   get_working_set_size(temp, column_size) > get_working_set_size(best_row, best_column)
                 && get_working_set_size(temp, column_size) < cache_size
@@ -73,6 +74,8 @@ class TSS {
             }
 
             // euclidean algo
+            row_size = quotient % row_size;
+            if (row_size == gcd) break;
             temp = row_size;
             row_size = old_row % row_size;
             old_row = temp;
@@ -104,13 +107,15 @@ int main(int argc, char* argv[]) {
     int cache_line_size = atoi(argv[2]);
     int row_length = atoi(argv[3]);
     int column_length = atoi(argv[4]);
-    
-    if ((cache_line_size > cache_size) || (cache_size % cache_line_size != 0)) {
-        std::cout << "Error" << std::endl;
+
+    // [CHECK] I think cache size should be multiple of cache line size.
+    // But the paper gives an example not aligned with this assumption. (cache size:1024 & cache line size: 200)
+    if (cache_line_size > cache_size) { // || (cache_size % cache_line_size != 0)) {
+        std::cout << "[ERROR] please check cache size and cache line size" << std::endl;
         exit(1);
     }
 
-    int tmp = TSS::euclidean(1024, 200);
+    int tmp = TSS::euclidean(cache_size, row_length);
     std::cout << tmp << std::endl;
     TSS tss(cache_size, cache_line_size, row_length, column_length);
     tss.run_tss();
