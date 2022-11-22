@@ -10,12 +10,20 @@ class TSS {
         cache_size(cache_size), cache_line_size(cache_line_size), row_length(row_length), column_length(column_length) {}
 
     int get_working_set_size(int tile_row_size, int tile_column_size) {
-        int WSS = tile_row_size * tile_column_size + tile_row_size + tile_column_size;
-        return (WSS > cache_size) ? 0 : WSS;
+        return tile_row_size * tile_column_size + tile_row_size + cache_line_size;
     }
 
-    int get_cross_interference_rate(int tile_row_size, int tile_column_size) {
-        return (2 * tile_row_size + tile_column_size) / (tile_row_size * tile_column_size);
+    float CIR(int tile_row_size, int tile_column_size) {
+        return (static_cast<float>(2 * tile_row_size + tile_column_size)) / (tile_row_size * tile_column_size);
+    }
+
+    int update_with_CLS(int row_size){
+        if (row_size % cache_line_size == 0 || row_size == row_length) {
+            return row_size;
+        } 
+        else {
+            return (row_size / cache_line_size) * cache_line_size;
+        }
     }
 
     static int euclidean(int a, int b) {
@@ -34,7 +42,6 @@ class TSS {
         int remainder1 = cache_size % row_length;
         int set_difference = row_length - remainder1;
         int cols_per_n = row_length / set_difference;
-        // clarify what gap is here
         int gap = row_length % set_difference;
 
         if (row_size == row_length) {
@@ -58,44 +65,57 @@ class TSS {
         int best_row = row_length, old_row = row_length;
         int best_column = cache_size / row_length, column_size = cache_size / row_length;
         int row_size = cache_size % row_length; // remainder
-        int quotient = cache_size / row_length;
-        int gcd = euclidean(cache_size, row_length);
+        bool fits_in_cache = get_working_set_size(best_row, best_column) <= cache_size;
 
         if (cache_size <= row_size) {
-            best_row = cache_size;
+            best_row = update_with_CLS((cache_size-1)/2);
             best_column = 1;
-        }
+        } 
         else {
-            while (row_size >= cache_line_size && old_row % row_size != 0 && column_size < column_length) {
+            while (row_size > cache_line_size && old_row % row_size != 0 && column_size < column_length) {
                 column_size = compute_col_size(row_size);
-
-                int temp = (row_size % cache_line_size == 0 || row_size == row_length) ? row_size : (row_size / cache_line_size) * cache_line_size;
-                if (   get_working_set_size(temp, column_size) > get_working_set_size(best_row, best_column)
-                    && get_working_set_size(temp, column_size) < cache_size
-                    && get_cross_interference_rate(temp, column_size) < get_cross_interference_rate(best_row, best_column)) {
-
+                int temp = update_with_CLS(row_size);
+                int WS_size = get_working_set_size(temp, column_size);
+                /*
+                std::cout << "Row size: " << temp << "\n" << "Column size: " << column_size << "\n";
+                std::cout << "WS size: " << WS_size << "\n";
+                std::cout << "WS in cache: " << (WS_size < cache_size) << "\n";
+                std::cout << "better WS: " << (WS_size > get_working_set_size(best_row, best_column)) << "\n";
+                std::cout << "better CIR: " << (CIR(temp, column_size) < CIR(best_row, best_column)) << "\n";
+                std::cout << "new_CIR oldCIR: ";
+                std::cout << CIR(temp, column_size) << " ";
+                std::cout << CIR(best_row, best_column) << "\n\n";
+                */
+                if (!fits_in_cache && WS_size < cache_size){
+                    best_row = temp;
+                    best_column = column_size; 
+                    fits_in_cache = true;
+                }
+                else if (WS_size < cache_size
+                         && WS_size > get_working_set_size(best_row, best_column)
+                         && CIR(temp, column_size) < CIR(best_row, best_column)) {
                     best_row = temp;
                     best_column = column_size;
                 }
 
-                row_size = quotient % row_size;
-                if (row_size == gcd) break;
                 temp = row_size;
                 row_size = old_row % row_size;
                 old_row = temp;
             }
-            
-            /***
-            TODO: adjust best col to meet working set size constraint --> ?
-            if (get_working_set_size(best_row, best_column) == 0){
-                while(get_working_set_size(best_row, best_column) == 0){
+
+            if (!fits_in_cache){
+                // maybe make more efficient?
+                while(get_working_set_size(best_row, best_column) > cache_size){
                     best_row -= cache_line_size;
                 }
             }
-            ***/
         }
+
         std::cout << "Best row size: " << best_row << std::endl;
         std::cout << "Best column size: " << best_column << std::endl;
+        // to eliminate capacity misses, the WS should be <= the cache size
+        std::cout << "Working set size: " << get_working_set_size(best_row, best_column) << std::endl;
+        assert(get_working_set_size(best_row, best_column) <= cache_size); 
     }
 
     private:
@@ -114,15 +134,14 @@ int main(int argc, char* argv[]) {
     int row_length = atoi(argv[3]);
     int column_length = atoi(argv[4]);
 
-    // [CHECK] I think cache size should be multiple of cache line size.
-    // But the paper gives an example not aligned with this assumption. (cache size:1024 & cache line size: 200)
-    if (cache_line_size > cache_size) { // || (cache_size % cache_line_size != 0)) {
+    // cache size should be multiple of cache line size.
+    if (cache_line_size > cache_size || (cache_size % cache_line_size != 0)) {
         std::cout << "[ERROR] please check cache size and cache line size" << std::endl;
         exit(1);
     }
 
     int tmp = TSS::euclidean(cache_size, row_length);
-    std::cout << tmp << std::endl;
+    // std::cout << tmp << std::endl;
     TSS tss(cache_size, cache_line_size, row_length, column_length);
     tss.run_tss();
 }

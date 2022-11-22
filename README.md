@@ -6,14 +6,12 @@ Run `g++ tss-demo/tss.cpp` and run `./a.out <cache_size> <cache_line_size> <row_
 
 # Issues
 
-- uncertain if line 34 makes sense
-- uncertain how to init `row_size` on line 48
+- [DONE] uncertain if line 34 makes sense 
+- [DONE] uncertain how to init `row_size` on line 48
     - we thought `cache_size % row_length` was fine, but this causes us never to enter the while loop if the cache is smaller than the array
-- current impl does not correctly handle working set size greater than cache
+- [DONE] current impl does not correctly handle working set size greater than cache
 
 # Todos
-- figure out what "adjust best col to meet working set size constraint" is in tss.cpp
-    - probably related to previous issue?
 - Create a pass in MLIR to apply TSS 
     - set up MLIR on server
     - copy over relevant parts of the MLIR loop tiling passes
@@ -23,17 +21,30 @@ Run `g++ tss-demo/tss.cpp` and run `./a.out <cache_size> <cache_line_size> <row_
     - do da coding
 - [DONE] Fix case where you return cols_per_set + 1 (Minkyoung: no need to modify since it is correct)
 - [DONE] Fix initialization of `row_size` (Minkyoung: check required)
-- Fix WS issue (Elanor)
+- [DONE] Fix WS issue (Elanor)
 - Write tests and walk through algorithm to determine correct solutions
 
 # Test Cases
+## Tests from Paper
+- Cache sizes: 8K (512 element) and 64K (4096 element)
+- Cache line sizes in bytes: 32 (2 element), 64 (4 element), 128 (8 element)
+- Array sizes: 256 x 256, 300 x 300, 301 x 301
+
+| CS  | CLS | Matrix    | Tile    | WS  | Pass? |
+|-----|-----|-----------|---------|-----|-------|
+| 512 | 2   | 300 x 300 | 16 x 29 | 482 | Y |
+| 512 | 8   | 300 x 300 | 16 x 29 | Not given | Y | 
+| 512 | 2   | 256 x 256 | 170 x 2 | 512 | Y |
+| 512 | 2   | 301 x 310 | 28 x 17 | 506 | Y |
+| 4096 | 8   | 256 x 256 | 240 x 16 | 4088 | Y |
+| 4096 | 8   | 300 x 300 | 88 x 41 | 3704 | Y |
+| 4096 | 8   | 301 x 301 | 112 x 26 | 3086 | N |
+
+Note: I (Elanor) am not convinced the last row is correct anyway
+
+## Custom Cases
 - 1024, 200, 200, 200 (PASS)
 - 18, 8, 10, 10 
 - 1024, ___, 200, 200
-- 8K, 32, 300, 300
-- paper has 8K (512 element) and 64K (4096 element) cache size
-- paper has cache line size 32 (2 element), 64 (4 element), 128 (8 element) (bytes)
-- array size generally 300 x 300, it's 303 x 21 for liv23
-- array sizes 256 x 256, 300 x 300, 301 x 301
-- cache smaller than array
-- WS never fits in cache
+- cache smaller than array: 500 50 500000 100000 (PASS)
+- WS never fits in cache: 256 8 240 240 (PASS)
