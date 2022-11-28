@@ -35,12 +35,12 @@ Run `g++ tss-demo/tss.cpp` and run `./a.out <cache_size> <cache_line_size> <row_
 | 512 | 2   | 300 x 300 | 16 x 29 | 482 | Y |
 | 512 | 8   | 300 x 300 | 16 x 29 | Not given | Y | 
 | 512 | 2   | 256 x 256 | 170 x 2 | 512 | Y |
-| 512 | 2   | 301 x 310 | 28 x 17 | 506 | Y |
+| 512 | 2   | 301 x 301 | 28 x 17 | 506 | Y |
 | 4096 | 8   | 256 x 256 | 240 x 16 | 4088 | Y |
 | 4096 | 8   | 300 x 300 | 88 x 41 | 3704 | Y |
-| 4096 | 8   | 301 x 301 | 112 x 26 | 3086 | N |
+| 4096 | 8   | 301 x 301 | 112 x 26 | 3086 | Test invalid |
 
-Note: I (Elanor) am not convinced the last row is correct anyway
+Note: Elanor and Minkyoung both think the last row dimensions are not possible given the algorithm
 
 ## Custom Cases
 - 1024, 200, 200, 200 (PASS)
