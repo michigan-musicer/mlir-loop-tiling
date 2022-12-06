@@ -51,5 +51,5 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 
 
 ## Useful Commands for Running MLIR Code 
-- /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32"
-- /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=512"
+- /home/llvm-project/build/bin/mlir-opt examples/matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32"
+- /home/llvm-project/build/bin/mlir-opt examples/matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=512"
