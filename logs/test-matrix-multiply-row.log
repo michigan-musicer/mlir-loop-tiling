@@ -1,0 +1,86 @@
+module attributes {llvm.data_layout = ""} {
+  llvm.func @printNewline()
+  llvm.func @printClose()
+  llvm.func @printComma()
+  llvm.func @printOpen()
+  llvm.func @printF64(f64)
+  llvm.func @entry() {
+    %0 = llvm.mlir.constant(dense<0.000000e+00> : vector<4xf64>) : vector<4xf64>
+    %1 = llvm.mlir.constant(dense<4.000000e+00> : vector<4xf64>) : vector<4xf64>
+    %2 = llvm.mlir.constant(1.000000e+00 : f64) : f64
+    %3 = llvm.mlir.constant(2.000000e+00 : f64) : f64
+    %4 = llvm.mlir.constant(3.000000e+00 : f64) : f64
+    %5 = llvm.mlir.constant(5.000000e+00 : f64) : f64
+    %6 = llvm.mlir.constant(6.000000e+00 : f64) : f64
+    %7 = llvm.mlir.constant(7.000000e+00 : f64) : f64
+    %8 = llvm.mlir.constant(1 : i64) : i64
+    %9 = llvm.insertelement %2, %0[%8 : i64] : vector<4xf64>
+    %10 = llvm.mlir.constant(2 : i64) : i64
+    %11 = llvm.insertelement %3, %9[%10 : i64] : vector<4xf64>
+    %12 = llvm.mlir.constant(3 : i64) : i64
+    %13 = llvm.insertelement %4, %11[%12 : i64] : vector<4xf64>
+    %14 = llvm.mlir.constant(1 : i64) : i64
+    %15 = llvm.insertelement %5, %1[%14 : i64] : vector<4xf64>
+    %16 = llvm.mlir.constant(2 : i64) : i64
+    %17 = llvm.insertelement %6, %15[%16 : i64] : vector<4xf64>
+    %18 = llvm.mlir.constant(3 : i64) : i64
+    %19 = llvm.insertelement %7, %17[%18 : i64] : vector<4xf64>
+    llvm.call @printOpen() : () -> ()
+    %20 = llvm.mlir.constant(0 : index) : i64
+    %21 = llvm.extractelement %13[%20 : i64] : vector<4xf64>
+    llvm.call @printF64(%21) : (f64) -> ()
+    llvm.call @printComma() : () -> ()
+    %22 = llvm.mlir.constant(1 : index) : i64
+    %23 = llvm.extractelement %13[%22 : i64] : vector<4xf64>
+    llvm.call @printF64(%23) : (f64) -> ()
+    llvm.call @printComma() : () -> ()
+    %24 = llvm.mlir.constant(2 : index) : i64
+    %25 = llvm.extractelement %13[%24 : i64] : vector<4xf64>
+    llvm.call @printF64(%25) : (f64) -> ()
+    llvm.call @printComma() : () -> ()
+    %26 = llvm.mlir.constant(3 : index) : i64
+    %27 = llvm.extractelement %13[%26 : i64] : vector<4xf64>
+    llvm.call @printF64(%27) : (f64) -> ()
+    llvm.call @printClose() : () -> ()
+    llvm.call @printNewline() : () -> ()
+    llvm.call @printOpen() : () -> ()
+    %28 = llvm.mlir.constant(0 : index) : i64
+    %29 = llvm.extractelement %19[%28 : i64] : vector<4xf64>
+    llvm.call @printF64(%29) : (f64) -> ()
+    llvm.call @printComma() : () -> ()
+    %30 = llvm.mlir.constant(1 : index) : i64
+    %31 = llvm.extractelement %19[%30 : i64] : vector<4xf64>
+    llvm.call @printF64(%31) : (f64) -> ()
+    llvm.call @printComma() : () -> ()
+    %32 = llvm.mlir.constant(2 : index) : i64
+    %33 = llvm.extractelement %19[%32 : i64] : vector<4xf64>
+    llvm.call @printF64(%33) : (f64) -> ()
+    llvm.call @printComma() : () -> ()
+    %34 = llvm.mlir.constant(3 : index) : i64
+    %35 = llvm.extractelement %19[%34 : i64] : vector<4xf64>
+    llvm.call @printF64(%35) : (f64) -> ()
+    llvm.call @printClose() : () -> ()
+    llvm.call @printNewline() : () -> ()
+    %36 = llvm.intr.matrix.multiply %13, %19 {lhs_columns = 2 : i32, lhs_rows = 2 : i32, rhs_columns = 2 : i32} : (vector<4xf64>, vector<4xf64>) -> vector<4xf64>
+    llvm.call @printOpen() : () -> ()
+    %37 = llvm.mlir.constant(0 : index) : i64
+    %38 = llvm.extractelement %36[%37 : i64] : vector<4xf64>
+    llvm.call @printF64(%38) : (f64) -> ()
+    llvm.call @printComma() : () -> ()
+    %39 = llvm.mlir.constant(1 : index) : i64
+    %40 = llvm.extractelement %36[%39 : i64] : vector<4xf64>
+    llvm.call @printF64(%40) : (f64) -> ()
+    llvm.call @printComma() : () -> ()
+    %41 = llvm.mlir.constant(2 : index) : i64
+    %42 = llvm.extractelement %36[%41 : i64] : vector<4xf64>
+    llvm.call @printF64(%42) : (f64) -> ()
+    llvm.call @printComma() : () -> ()
+    %43 = llvm.mlir.constant(3 : index) : i64
+    %44 = llvm.extractelement %36[%43 : i64] : vector<4xf64>
+    llvm.call @printF64(%44) : (f64) -> ()
+    llvm.call @printClose() : () -> ()
+    llvm.call @printNewline() : () -> ()
+    llvm.return
+  }
+}
+
