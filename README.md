@@ -48,3 +48,8 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 - 1024, ___, 200, 200
 - cache smaller than array: 500 50 500000 100000 (PASS)
 - WS never fits in cache: 256 8 240 240 (PASS)
+
+
+## Useful Commands for Running MLIR Code 
+- /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32"
+- /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=512"
