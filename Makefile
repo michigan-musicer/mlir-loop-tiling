@@ -52,3 +52,4 @@ convert_memref_to_llvm: convert_arith_to_llvm
 	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/convert_arith_to_llvm.mlir -convert-memref-to-llvm > pipeline/$@.mlir
 
 convert_mlir_to_llvm: convert_memref_to_llvm
+	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/convert_memref_to_llvm.mlir -reconcile-unrealized-casts > pipeline/$@.mlir
