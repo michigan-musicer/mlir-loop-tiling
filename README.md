@@ -51,5 +51,37 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 
 
 ## Useful Commands for Running MLIR Code 
-- /home/llvm-project/build/bin/mlir-opt examples/matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32"
-- /home/llvm-project/build/bin/mlir-opt examples/matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=512"
+- /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32"
+- /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=512"
+
+## Parameters on the server
+- Cache size: 64 KB (4096 elements) (use command `lscpu`)
+- Cache line size: 64 B (4 elements) (use command `getconf LEVEL1_DCACHE_LINESIZE`)
+
+## TODO
+- Figure out how to add our pass to the rest of them
+- Modify LoopTiling code and LoopUtils to support rectangular tiles
+- Figure out what modifications to `getWorkingSetSize()` and `CIR()` are necessary with the current tiling pass
+- Tiling for the most referenced matrix not all matrix [ideally but maybe too hard]
+
+
+[1] getTileSizes(): How about just using `TSS.cpp` and set its resulting tilesize as `commend-line tileSize`?
+
+```cpp
+void LoopTiling::getTileSizes(ArrayRef<AffineForOp> band,
+                              SmallVectorImpl<unsigned> *tileSizes) {
+  if (band.empty())
+    return;
+ 
+  **// Use command-line tileSize for all loops if specified.**
+  if (**tileSize**) {
+    tileSizes->assign(band.size(), tileSize);
+    return;
+  }
+```
+
+[2] Should check if this func supports **rectangular** tile → Seems not yet supported 
+
+1. [constructTiledLoopNest()](https://mlir.llvm.org/doxygen/LoopUtils_8cpp.html#a83637a522ca37f21ad29b95686634163)
+2. tilePerfectlyNested()
+3. separateFullTiles()
