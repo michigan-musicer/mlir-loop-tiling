@@ -54,6 +54,12 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 - /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32"
 - /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=512"
 
+## Using the Makefile Pipeline 
+- "make loop_tile_size" runs the affine dialect loop tile optimization from mlir to mlir
+- "make convert_mlir_to_llvm" runs the entire pipeline for the affine loop optimization form mlir to llvm, outputting pipeline/convert_mlir_to_llvm.mlir which should only contain llvm instructions
+- The make commands are intended to be run in your home directory on server and create a pipeline directory to store output
+- You can run make clean to get rid of the pipeline directory and run it fresh
+
 ## Parameters on the server
 - Cache size: 64 KB (4096 elements) (use command `lscpu`)
 - Cache line size: 64 B (4 elements) (use command `getconf LEVEL1_DCACHE_LINESIZE`)
