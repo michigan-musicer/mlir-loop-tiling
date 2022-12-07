@@ -36,9 +36,6 @@ loop_tile_size: init_pipeline
 lower_affine: loop_tile_size
 	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/loop_tile_size.mlir -lower-affine > pipeline/$@.mlir
 
-lower_affine: loop_tile_size
-	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/loop_tile_size.mlir -lower-affine > pipeline/$@.mlir
-
 convert_scf_to_cf: lower_affine
 	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/lower_affine.mlir -convert-scf-to-cf > pipeline/$@.mlir
 
