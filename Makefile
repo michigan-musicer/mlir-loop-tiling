@@ -25,9 +25,10 @@ ch5: init
 
 clean:
 	rm -rf out
+	rm -rf pipeline
 
 init_pipeline:
 	mkdir -p pipeline
 
-loop_tile_cache_size:
-	$(PATH_TO_BUILD)/bin/mlir-opt $(PATH_TO_EXAMPLES)/matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=512" > pipeline/$@.mlir
+loop_tile_size: init_pipeline
+	$(PATH_TO_BUILD)/bin/mlir-opt $(PATH_TO_EXAMPLES)/matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32" > pipeline/$@.mlir
