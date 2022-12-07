@@ -35,3 +35,23 @@ loop_tile_size: init_pipeline
 
 lower_affine: loop_tile_size
 	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/loop_tile_size.mlir -lower-affine > pipeline/$@.mlir
+
+lower_affine: loop_tile_size
+	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/loop_tile_size.mlir -lower-affine > pipeline/$@.mlir
+
+convert_scf_to_cf: lower_affine
+	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/lower_affine.mlir -convert-scf-to-cf > pipeline/$@.mlir
+
+convert_cf_to_llvm: convert_scf_to_cf
+	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/convert_scf_to_cf.mlir -convert-cf-to-llvm > pipeline/$@.mlir
+
+convert_func_to_llvm: convert_cf_to_llvm
+	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/convert_cf_to_llvm.mlir -convert-func-to-llvm > pipeline/$@.mlir
+
+convert_arith_to_llvm: convert_func_to_llvm
+	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/convert_func_to_llvm.mlir -convert-arith-to-llvm > pipeline/$@.mlir
+
+convert_memref_to_llvm: convert_arith_to_llvm
+	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/convert_arith_to_llvm.mlir -convert-memref-to-llvm > pipeline/$@.mlir
+
+convert_mlir_to_llvm: convert_memref_to_llvm
