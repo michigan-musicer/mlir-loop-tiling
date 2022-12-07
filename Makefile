@@ -6,6 +6,8 @@ PATH_TO_TOY_EXAMPLE = $(PATH_TO_MLIR_SRC)/examples/toy
 
 PATH_TO_TEST = $(PATH_TO_MLIR_SRC)/test
 
+PATH_TO_EXAMPLES = ~/mlir-loop-tiling/examples
+
 init:
 	mkdir -p out
 
@@ -23,3 +25,9 @@ ch5: init
 
 clean:
 	rm -rf out
+
+init_pipeline:
+	mkdir -p pipeline
+
+loop_tile_cache_size:
+	$(PATH_TO_BUILD)/bin/mlir-opt $(PATH_TO_EXAMPLES)/matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=512" > pipeline/$@.mlir
