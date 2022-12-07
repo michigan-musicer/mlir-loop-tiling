@@ -32,3 +32,6 @@ init_pipeline:
 
 loop_tile_size: init_pipeline
 	$(PATH_TO_BUILD)/bin/mlir-opt $(PATH_TO_EXAMPLES)/matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32" > pipeline/$@.mlir
+
+lower_affine: loop_tile_size
+	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/loop_tile_size.mlir -lower-affine > pipeline/$@.mlir
