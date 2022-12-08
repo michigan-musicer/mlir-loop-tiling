@@ -49,7 +49,7 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 - cache smaller than array: 500 50 500000 100000 (PASS)
 - WS never fits in cache: 256 8 240 240 (PASS)
 
-
+# Commands
 ## Useful Commands for Running MLIR Code 
 - /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32"
 - /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=512"
@@ -64,7 +64,18 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 - Cache size: 64 KB (4096 elements) (use command `lscpu`)
 - Cache line size: 64 B (4 elements) (use command `getconf LEVEL1_DCACHE_LINESIZE`)
 
-## TODO
+## Cachegrind
+- After running the "make convert_mlir_to_llvm" command, run `/home/llvm-project/build/bin/mlir-translate --mlir-to-llvmir ~/mlir-loop-tiling/pipeline/convert_mlir_to_llvm.mlir -o main_llvm.bc` to get the bitcode file
+- Then run `llc -filetype=obj -opaque-pointers=1 main_llvm.bc` which should generate main_llvm.o
+- Then try `gcc main_llvm.o -g -o basic_test.exe` but we have been running into the error
+```
+/usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o: in function `_start':
+(.text+0x1b): undefined reference to `main'
+collect2: error: ld returned 1 exit status
+```
+- Last step is `valgrind --tool=cachegrind ./basic_test.exe`
+
+# TODO
 - Figure out how to add our pass to the rest of them
 - Modify LoopTiling code and LoopUtils to support rectangular tiles
 - Figure out what modifications to `getWorkingSetSize()` and `CIR()` are necessary with the current tiling pass
