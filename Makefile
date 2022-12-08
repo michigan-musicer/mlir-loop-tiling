@@ -26,12 +26,13 @@ ch5: init
 clean:
 	rm -rf out
 	rm -rf pipeline
+	rm main_llvm.*
 
 init_pipeline:
 	mkdir -p pipeline
 
 loop_tile_size: init_pipeline
-	$(PATH_TO_BUILD)/bin/mlir-opt $(PATH_TO_EXAMPLES)/matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32" > pipeline/$@.mlir
+	$(PATH_TO_BUILD)/bin/mlir-opt $(PATH_TO_EXAMPLES)/matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-sizes=300,88,41" > pipeline/$@.mlir
 
 lower_affine: loop_tile_size
 	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/loop_tile_size.mlir -lower-affine > pipeline/$@.mlir
@@ -53,3 +54,16 @@ convert_memref_to_llvm: convert_arith_to_llvm
 
 convert_mlir_to_llvm: convert_memref_to_llvm
 	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/convert_memref_to_llvm.mlir -reconcile-unrealized-casts > pipeline/$@.mlir
+
+convert_to_bc: convert_mlir_to_llvm
+	$(PATH_TO_BUILD)/bin/mlir-translate --mlir-to-llvmir pipeline/convert_mlir_to_llvm.mlir -o main_llvm.bc
+
+get_executable: convert_to_bc
+	llc -filetype=obj -opaque-pointers=1 main_llvm.bc
+	gcc main_llvm.o -g -o basic_test.exe
+
+run_cachegrind:
+	valgrind --tool=cachegrind ./basic_test.exe
+
+tss:
+	g++ tss-demo/tss.cpp 

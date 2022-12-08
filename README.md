@@ -59,6 +59,10 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 - "make convert_mlir_to_llvm" runs the entire pipeline for the affine loop optimization from mlir to llvm, outputting pipeline/convert_mlir_to_llvm.mlir which should only contain llvm instructions
 - The make commands are intended to be run in your home directory on server and create a pipeline directory to store output
 - You can run "make clean" to get rid of the pipeline directory and run it fresh
+- "make get_executable" runs the MLIR conversion pipeline and also converts the output to llvm bc, makes an object file, and creates an executable from that
+- "make run_cachegrind" runs the cachegrind command; it assumes the executable is called `basic_test.exe`
+- "make tss" gives the executable `a.out`. Then run `./a.out <cache size> <cache line size> <number of rows> <number of columns>`
+- For "make loop_tile_size" we should probably have a better way of specifying the tile size; currently it is hardcoded
 
 ## Parameters on the server
 - Cache size: 64 KB (4096 elements) (use command `lscpu`)
@@ -67,12 +71,7 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 ## Cachegrind
 - After running the "make convert_mlir_to_llvm" command, run `/home/llvm-project/build/bin/mlir-translate --mlir-to-llvmir ~/mlir-loop-tiling/pipeline/convert_mlir_to_llvm.mlir -o main_llvm.bc` to get the bitcode file
 - Then run `llc -filetype=obj -opaque-pointers=1 main_llvm.bc` which should generate main_llvm.o
-- Then try `gcc main_llvm.o -g -o basic_test.exe` but we have been running into the error
-```
-/usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o: in function `_start':
-(.text+0x1b): undefined reference to `main'
-collect2: error: ld returned 1 exit status
-```
+- Then run `gcc main_llvm.o -g -o basic_test.exe` 
 - Last step is `valgrind --tool=cachegrind ./basic_test.exe`
 
 # TODO
