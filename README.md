@@ -74,6 +74,14 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 - Then run `gcc main_llvm.o -g -o basic_test.exe` 
 - Last step is `valgrind --tool=cachegrind ./basic_test.exe`
 
+# Results
+- In results folder, files starting with 800dim are for 800x800. Any other file is for 300x300.
+- Default performs significantly better for 300x300 (order of magnitude) but ours performs better for 800x800 (factor of 2).
+
+## Notes
+- Currently am running tss, then manually changing the Makefile tiling arguments. This could definitely be better.
+- I also don't know how to get the cachegrind to send the output to a file (> doesn't seem to work) so am manually copying that. Should also be better.
+
 # TODO
 - Figure out how to add our pass to the rest of them
 - Modify LoopTiling code and LoopUtils to support rectangular tiles
