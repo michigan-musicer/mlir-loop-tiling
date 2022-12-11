@@ -8,6 +8,10 @@ PATH_TO_TEST = $(PATH_TO_MLIR_SRC)/test
 
 PATH_TO_EXAMPLES = ~/mlir-loop-tiling/examples
 
+TEST_CASE = demo
+
+TILE_SIZES = 100,10,184
+
 init:
 	mkdir -p out
 
@@ -28,16 +32,18 @@ clean:
 	rm -rf pipeline
 	rm main_llvm.*
 	rm basic_test.exe
-	rm cachegrind.out.*
 
-init_pipeline: 
+init_pipeline: clean
 	mkdir -p pipeline
 
 loop_tile_size: init_pipeline
-	$(PATH_TO_BUILD)/bin/mlir-opt $(PATH_TO_EXAMPLES)/matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-sizes=800,96,41" > pipeline/$@.mlir
+	$(PATH_TO_BUILD)/bin/mlir-opt $(PATH_TO_EXAMPLES)/matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-sizes=$(TILE_SIZES)"> tiled-matmul/$(TEST_CASE).mlir
 
-lower_affine: loop_tile_size
-	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/loop_tile_size.mlir -lower-affine > pipeline/$@.mlir
+tile_default: init_pipeline
+	$(PATH_TO_BUILD)/bin/mlir-opt $(PATH_TO_EXAMPLES)/matmul-tiling.mlir -split-input-file -affine-loop-tile="cache-size=64" > tiled-matmul/$(TEST_CASE).mlir
+
+lower_affine: 
+	$(PATH_TO_BUILD)/bin/mlir-opt tiled-matmul/$(TEST_CASE).mlir -lower-affine > pipeline/$@.mlir
 
 convert_scf_to_cf: lower_affine
 	$(PATH_TO_BUILD)/bin/mlir-opt pipeline/lower_affine.mlir -convert-scf-to-cf > pipeline/$@.mlir
@@ -60,12 +66,12 @@ convert_mlir_to_llvm: convert_memref_to_llvm
 convert_to_bc: convert_mlir_to_llvm
 	$(PATH_TO_BUILD)/bin/mlir-translate --mlir-to-llvmir pipeline/convert_mlir_to_llvm.mlir -o main_llvm.bc
 
-get_executable: convert_to_bc
+executable: convert_to_bc
 	llc -filetype=obj -opaque-pointers=1 main_llvm.bc
 	gcc main_llvm.o -g -o basic_test.exe
 
 run_cachegrind:
-	valgrind --tool=cachegrind ./basic_test.exe
+	valgrind --tool=cachegrind --log-file="results/$(TEST_CASE).txt" ./basic_test.exe
 
 tss:
-	g++ tss-demo/tss.cpp 
+	g++ tss-demo/tss.cpp -o tss

@@ -49,6 +49,10 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 - cache smaller than array: 500 50 500000 100000 (PASS)
 - WS never fits in cache: 256 8 240 240 (PASS)
 
+- 300x300, 248, 7
+- 500x500, 408, 4
+- 
+
 # Commands
 ## Useful Commands for Running MLIR Code 
 - /home/llvm-project/build/bin/mlir-opt matmul-tiling.mlir -split-input-file -affine-loop-tile="tile-size=32"
@@ -61,12 +65,12 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 - You can run "make clean" to get rid of the pipeline directory and run it fresh
 - "make get_executable" runs the MLIR conversion pipeline and also converts the output to llvm bc, makes an object file, and creates an executable from that
 - "make run_cachegrind" runs the cachegrind command; it assumes the executable is called `basic_test.exe`
-- "make tss" gives the executable `a.out`. Then run `./a.out <cache size> <cache line size> <number of rows> <number of columns>`
+- "make tss" gives the executable `tss`. Then run `./tss <cache size> <cache line size> <number of rows> <number of columns>`
 - For "make loop_tile_size" we should probably have a better way of specifying the tile size; currently it is hardcoded
 
 ## Parameters on the server
-- Cache size: 64 KB (4096 elements) (use command `lscpu`)
-- Cache line size: 64 B (4 elements) (use command `getconf LEVEL1_DCACHE_LINESIZE`)
+- Cache size: 64 KB (2048 elements if elements are 32 B) (use command `lscpu`)
+- Cache line size: 64 B (2 elements if elements are 32 B) (use command `getconf LEVEL1_DCACHE_LINESIZE`)
 
 ## Cachegrind
 - After running the "make convert_mlir_to_llvm" command, run `/home/llvm-project/build/bin/mlir-translate --mlir-to-llvmir ~/mlir-loop-tiling/pipeline/convert_mlir_to_llvm.mlir -o main_llvm.bc` to get the bitcode file
@@ -75,8 +79,29 @@ Note: Elanor and Minkyoung both think the last row dimensions are not possible g
 - Last step is `valgrind --tool=cachegrind ./basic_test.exe`
 
 # Results
-- In results folder, files starting with 800dim are for 800x800. Any other file is for 300x300.
-- Default performs significantly better for 300x300 (order of magnitude) but ours performs better for 800x800 (factor of 2).
+- Output from cachegrind is stored in the results folder
+- Output from running the tiling pass is stored in the tiled-matmul folder
+- Default test cases are named by the dimensions of the matrix multiply _ default (square matrices are just named with a single number)
+- TSS test cases for an (axb)*(bxc) matrix are named as follows
+  - after TSS is run (by running `./tss 2048 2 b c), it outputs tile_rowsize and tile_colsize
+  - input to tiling pass is a, tile-colsize, tile-rowsize (col comes before row because the for loop iterating over columns of the special matrix comes before the for loop iterating over rows)
+  - test cases are named a_[tile-colsize]_[tile-rowsize]
+  - sorry it is annoying to map a test case back to the original dimensions; this made sense as I was running the cases. You can figure it out by looking at the mlir file for that test case and seeing the parameters of the matrices
+
+## Running a test case
+Assume (axb)*(bxc) matrix multiply
+1. Modify matmul-tiling.mlir
+    1. arg0 should be of dimension axb, arg1 of dimension bxc, and arg2 of dimension axc
+    2. i should go to a, j should go to c, and k should go to b
+2. If running a TSS case:
+    1. Run the tss algorithm with input 2048 2 b c (assuming the matrixes have 32B elements); get output tile-rowsize and tile-colsize.
+    2. Modify TILE_SIZES in the Makefile to be a, tile-colsize, tile-rowsize.
+3. Modify TEST_CASE in the Makefile to be the name of your test case.
+4. Tile the matrix
+    1. If default, run `make tile_default`.
+    2. If TSS, run `make loop_tile_size`.
+5. Run mlir code through pipeline to get executable: `make executable`
+6. Profile with cachegrind to see number of cache misses: `make run_cachegrind`
 
 ## Notes
 - Currently am running tss, then manually changing the Makefile tiling arguments. This could definitely be better.

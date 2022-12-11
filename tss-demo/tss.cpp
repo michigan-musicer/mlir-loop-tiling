@@ -4,13 +4,18 @@
 
 // note that we swap rows and columns here because the original paper is in Fortran and 
 // C++ is row major instead of column major.
+// units are in elements
+// calculate by dividing bytes of CS and CLS by bytes of element
 class TSS {
     public:
     TSS(int cache_size, int cache_line_size, int row_length, int column_length) : 
         cache_size(cache_size), cache_line_size(cache_line_size), row_length(row_length), column_length(column_length) {}
 
     int get_working_set_size(int tile_row_size, int tile_column_size) {
-        return tile_row_size * tile_column_size + tile_row_size + cache_line_size;
+        // to make no assumptions about a matrix being register allocated, we
+        // conservatively make the WS size rely on tile_column_size rather 
+        // than cache line size
+        return tile_row_size * tile_column_size + tile_row_size + tile_column_size;
     }
 
     float CIR(int tile_row_size, int tile_column_size) {
@@ -66,7 +71,8 @@ class TSS {
         int best_column = cache_size / row_length, column_size = cache_size / row_length;
         int row_size = cache_size % row_length; // remainder
         bool fits_in_cache = get_working_set_size(best_row, best_column) <= cache_size;
-
+        // std::cout << "old row: " << old_row << "\n";
+        // std::cout << "fits in cache: " << fits_in_cache << "\n";
         if (cache_size <= row_size) {
             best_row = update_with_CLS((cache_size-1)/2);
             best_column = 1;
@@ -78,8 +84,9 @@ class TSS {
                 int WS_size = get_working_set_size(temp, column_size);
                 /*
                 std::cout << "Row size: " << temp << "\n" << "Column size: " << column_size << "\n";
-                std::cout << "WS size: " << WS_size << "\n";
+                std::cout << "new WS size: " << WS_size << "\n";
                 std::cout << "WS in cache: " << (WS_size < cache_size) << "\n";
+                std::cout << "curr WS: " << get_working_set_size(best_row, best_column) << "\n";
                 std::cout << "better WS: " << (WS_size > get_working_set_size(best_row, best_column)) << "\n";
                 std::cout << "better CIR: " << (CIR(temp, column_size) < CIR(best_row, best_column)) << "\n";
                 std::cout << "new_CIR oldCIR: ";
